@@ -21,6 +21,16 @@ CREATE TABLE IF NOT EXISTS events (
     received_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_events_vessel_id ON events (vessel_id);
+
+CREATE TABLE IF NOT EXISTS audit_records (
+    audit_id TEXT PRIMARY KEY,
+    vessel_id TEXT NOT NULL,
+    event_ids TEXT NOT NULL,
+    resolved_risk_signal TEXT NOT NULL,
+    resolution_reason TEXT NOT NULL,
+    timestamp TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_audit_vessel_id ON audit_records (vessel_id);
 """
 
 

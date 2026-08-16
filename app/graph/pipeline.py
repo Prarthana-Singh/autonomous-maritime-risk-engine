@@ -83,6 +83,7 @@ def generate_audit_node(state: GraphState) -> GraphState:
     event = state["event"]
     affected = next(rs for rs in state["state_history"] if event.event_id in rs.event_ids)
     audit_record: dict[str, Any] = {
+        "audit_id": event.event_id,
         "vessel_id": event.vessel_id,
         "event_ids": list(affected.event_ids),
         "resolved_risk_signal": affected.risk_signal,
@@ -95,6 +96,7 @@ def generate_audit_node(state: GraphState) -> GraphState:
 def make_persist_node(conn: sqlite3.Connection):
     def persist_node(state: GraphState) -> GraphState:
         repository.insert_event(conn, state["event"])
+        repository.insert_audit_record(conn, state["audit_record"])
         return {**state, "status": "accepted"}
 
     return persist_node
