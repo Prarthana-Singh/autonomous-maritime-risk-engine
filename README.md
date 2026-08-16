@@ -129,6 +129,14 @@ PRD's exact priority chain over a set of candidate events:
    doesn't cover a fully-tied case, so a fallback was necessary to keep
    the function total and deterministic.
 
+*On "event freshness":* the PRD's MVP scope also says reconciliation
+"considers source reliability ... and event freshness," but the
+functional requirement's actual priority chain (reproduced above) has
+only three tiers, with no separate freshness score. "Freshness" is
+read here as descriptive language for the timestamp tier, not a fourth
+independent scoring axis — there is no freshness field or weighting
+beyond `timestamp` itself anywhere in the implementation.
+
 Every resolution returns a specific, human-readable explanation (e.g.
 *"Weather (w1) selected: confidence_score tied at 0.8 among 2 candidates;
 source_reliability 0.9 is the highest among them."*) rather than a vague
@@ -273,6 +281,11 @@ requirements.txt
 Requires Python 3.12+.
 
 ```
+git clone https://github.com/Prarthana-Singh/autonomous-maritime-risk-engine.git
+cd autonomous-maritime-risk-engine
+```
+
+```
 python -m venv .venv
 .venv\Scripts\pip install -r requirements.txt        # Windows
 # source .venv/bin/activate && pip install -r requirements.txt   # macOS/Linux
@@ -390,6 +403,43 @@ Fetch the reconstructed, time-ordered raw event history:
 ```
 curl http://127.0.0.1:8000/vessels/MV-Atlas/history
 ```
+Response (actual output for the two requests above):
+```json
+[
+  {
+    "event_id": "r1",
+    "source": "Regulatory Compliance",
+    "vessel_id": "MV-Atlas",
+    "risk_signal": "low",
+    "timestamp": "2026-08-15T12:00:00Z",
+    "confidence_score": 0.8
+  },
+  {
+    "event_id": "w1",
+    "source": "Weather",
+    "vessel_id": "MV-Atlas",
+    "risk_signal": "high",
+    "timestamp": "2026-08-15T12:00:00Z",
+    "confidence_score": 0.8
+  }
+]
+```
+
+**Discrepancy vs. the PRD, flagged rather than silently reconciled:** the
+PRD's functional requirements describe the per-vessel state history as a
+list of `RiskState` objects shaped `{risk_signal, source_reliability,
+timestamp, reasoning}`. This endpoint does **not** return that shape —
+it returns the raw, temporally-ordered `EventIn` records shown above
+(`event_id, source, vessel_id, risk_signal, timestamp, confidence_score`,
+per `app/models/schemas.py`), i.e. individual unresolved events, not the
+conflict-adjudicated state. The actual `RiskState` shape (defined in
+`app/domain/state_reconciliation.py` as `risk_signal,
+source_reliability, timestamp, reasoning, event_ids` — a fifth field,
+`event_ids`, beyond the PRD's four, added for audit traceability) is only
+produced by `POST /replay` / the CLI, under each vessel's `state_history`
+key (see the Replay example below). There is currently no live GET
+endpoint that returns the resolved `RiskState` history for an
+already-ingested vessel.
 
 Fetch the audit trail:
 ```
@@ -462,5 +512,8 @@ curl -X POST http://127.0.0.1:8000/replay \
   [Docker](#docker)).
 - **Bonus/advanced PRD scope was not implemented**: no LangChain
   natural-language summaries, no time-shifted replay, no versioned state
-  snapshots. These were explicitly out of MVP scope and excluded to keep
-  the implementation within the time constraint.
+  snapshots, no dynamic reliability signals derived from source
+  confidence scores (`source_reliability` is a static config table, not
+  computed from `confidence_score`). These were explicitly out of MVP
+  scope and excluded to keep the implementation within the time
+  constraint.
