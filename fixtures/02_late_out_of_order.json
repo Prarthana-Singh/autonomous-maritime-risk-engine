@@ -5,7 +5,7 @@
     "vessel_id": "MV-Atlas",
     "risk_signal": "high",
     "timestamp": "2026-08-14T12:00:00Z",
-    "confidence_score": 0.8
+    "confidence_score": 0.7
   },
   {
     "event_id": "evt-3002",
@@ -13,7 +13,7 @@
     "vessel_id": "MV-Atlas",
     "risk_signal": "medium",
     "timestamp": "2026-08-14T12:10:00Z",
-    "confidence_score": 0.75
+    "confidence_score": 0.9
   },
   {
     "event_id": "evt-3003",
@@ -21,6 +21,6 @@
     "vessel_id": "MV-Atlas",
     "risk_signal": "low",
     "timestamp": "2026-08-14T11:50:00Z",
-    "confidence_score": 0.7
+    "confidence_score": 0.5
   }
 ]

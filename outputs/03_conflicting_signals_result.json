@@ -40,15 +40,25 @@
         {
           "audit_id": "evt-4003",
           "event_ids": [
+            "evt-4001",
             "evt-4003"
           ],
-          "resolution_reason": "Only one candidate event (evt-4003); no conflict to resolve.",
-          "resolved_risk_signal": "medium",
-          "timestamp": "2026-08-14T15:00:00+00:00",
+          "resolution_reason": "Weather (evt-4001) selected: confidence_score 0.8 is the highest among 2 candidates.",
+          "resolved_risk_signal": "high",
+          "timestamp": "2026-08-14T09:00:00+00:00",
           "vessel_id": "MV-Borealis"
         }
       ],
       "state_history": [
+        {
+          "event_ids": [
+            "evt-4001"
+          ],
+          "reasoning": "Only one candidate event (evt-4001); no conflict to resolve.",
+          "risk_signal": "high",
+          "source_reliability": 0.9,
+          "timestamp": "2026-08-14T09:00:00+00:00"
+        },
         {
           "event_ids": [
             "evt-4001",
@@ -61,12 +71,13 @@
         },
         {
           "event_ids": [
+            "evt-4001",
             "evt-4003"
           ],
-          "reasoning": "Only one candidate event (evt-4003); no conflict to resolve.",
-          "risk_signal": "medium",
-          "source_reliability": 0.7,
-          "timestamp": "2026-08-14T15:00:00+00:00"
+          "reasoning": "Weather (evt-4001) selected: confidence_score 0.8 is the highest among 2 candidates.",
+          "risk_signal": "high",
+          "source_reliability": 0.9,
+          "timestamp": "2026-08-14T09:00:00+00:00"
         }
       ]
     }

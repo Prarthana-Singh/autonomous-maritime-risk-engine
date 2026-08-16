@@ -29,9 +29,10 @@
         {
           "audit_id": "evt-3002",
           "event_ids": [
+            "evt-3001",
             "evt-3002"
           ],
-          "resolution_reason": "Only one candidate event (evt-3002); no conflict to resolve.",
+          "resolution_reason": "Weather (evt-3002) selected: confidence_score 0.9 is the highest among 2 candidates.",
           "resolved_risk_signal": "medium",
           "timestamp": "2026-08-14T12:10:00+00:00",
           "vessel_id": "MV-Atlas"
@@ -59,18 +60,20 @@
         },
         {
           "event_ids": [
+            "evt-3003",
             "evt-3001"
           ],
-          "reasoning": "Only one candidate event (evt-3001); no conflict to resolve.",
+          "reasoning": "Weather (evt-3001) selected: confidence_score 0.7 is the highest among 2 candidates.",
           "risk_signal": "high",
           "source_reliability": 0.9,
           "timestamp": "2026-08-14T12:00:00+00:00"
         },
         {
           "event_ids": [
+            "evt-3001",
             "evt-3002"
           ],
-          "reasoning": "Only one candidate event (evt-3002); no conflict to resolve.",
+          "reasoning": "Weather (evt-3002) selected: confidence_score 0.9 is the highest among 2 candidates.",
           "risk_signal": "medium",
           "source_reliability": 0.9,
           "timestamp": "2026-08-14T12:10:00+00:00"

@@ -33,9 +33,10 @@
         {
           "audit_id": "evt-5002",
           "event_ids": [
+            "evt-5001",
             "evt-5002"
           ],
-          "resolution_reason": "Only one candidate event (evt-5002); no conflict to resolve.",
+          "resolution_reason": "Weather (evt-5002) selected: confidence_score 0.9 is the highest among 2 candidates.",
           "resolved_risk_signal": "high",
           "timestamp": "2026-08-14T08:00:00+00:00",
           "vessel_id": "MV-Celeste"
@@ -43,10 +44,9 @@
         {
           "audit_id": "evt-5003",
           "event_ids": [
-            "evt-5002",
             "evt-5003"
           ],
-          "resolution_reason": "Weather (evt-5002) selected: confidence_score tied at 0.9 among 2 candidates; source_reliability 0.9 is the highest among them.",
+          "resolution_reason": "Only one candidate event (evt-5003); no conflict to resolve.",
           "resolved_risk_signal": "high",
           "timestamp": "2026-08-14T08:00:00+00:00",
           "vessel_id": "MV-Celeste"
@@ -74,21 +74,31 @@
         },
         {
           "event_ids": [
+            "evt-5004",
             "evt-5001"
           ],
-          "reasoning": "Only one candidate event (evt-5001); no conflict to resolve.",
+          "reasoning": "Port Congestion (evt-5001) selected: confidence_score 0.6 is the highest among 2 candidates.",
           "risk_signal": "medium",
           "source_reliability": 0.6,
           "timestamp": "2026-08-14T05:00:00+00:00"
         },
         {
           "event_ids": [
-            "evt-5002",
-            "evt-5003"
+            "evt-5001",
+            "evt-5002"
           ],
-          "reasoning": "Weather (evt-5002) selected: confidence_score tied at 0.9 among 2 candidates; source_reliability 0.9 is the highest among them.",
+          "reasoning": "Weather (evt-5002) selected: confidence_score 0.9 is the highest among 2 candidates.",
           "risk_signal": "high",
           "source_reliability": 0.9,
+          "timestamp": "2026-08-14T08:00:00+00:00"
+        },
+        {
+          "event_ids": [
+            "evt-5003"
+          ],
+          "reasoning": "Only one candidate event (evt-5003); no conflict to resolve.",
+          "risk_signal": "high",
+          "source_reliability": 0.8,
           "timestamp": "2026-08-14T08:00:00+00:00"
         }
       ]

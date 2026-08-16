@@ -86,13 +86,15 @@ def test_replaying_same_event_twice_leaves_state_history_unchanged():
 
 def test_generate_audit_reflects_conflict_resolution_reason():
     graph, _conn = make_graph()
+    # Distinct (but close) timestamps: two sources reporting moments apart,
+    # not literally simultaneously -- the realistic case this rule targets.
     weather = make_raw_event(
         event_id="w1", source="Weather", risk_signal="high",
         timestamp="2026-08-15T12:00:00Z", confidence_score=0.8,
     )
     regulatory = make_raw_event(
         event_id="r1", source="Regulatory Compliance", risk_signal="low",
-        timestamp="2026-08-15T12:00:00Z", confidence_score=0.8,
+        timestamp="2026-08-15T12:05:00Z", confidence_score=0.8,
     )
 
     process_event(graph, weather)
@@ -106,10 +108,22 @@ def test_generate_audit_reflects_conflict_resolution_reason():
 
 
 def test_late_out_of_order_events_produce_correct_state_history():
+    # Under the current-vs-incoming conflict rule, every distinct signal
+    # is a real conflict against whatever is currently resolved, so each
+    # later report needs to actually outrank the previous one to win --
+    # confidence rises with time here so the win/win/win chain is
+    # unambiguous, while still proving the late arrival is slotted into
+    # its correct chronological position first (not appended last).
     graph, _conn = make_graph()
-    high = make_raw_event(event_id="e1", risk_signal="high", timestamp="2026-08-15T12:00:00Z")
-    medium = make_raw_event(event_id="e2", risk_signal="medium", timestamp="2026-08-15T12:10:00Z")
-    low_late = make_raw_event(event_id="e3", risk_signal="low", timestamp="2026-08-15T11:50:00Z")
+    high = make_raw_event(
+        event_id="e1", risk_signal="high", timestamp="2026-08-15T12:00:00Z", confidence_score=0.7
+    )
+    medium = make_raw_event(
+        event_id="e2", risk_signal="medium", timestamp="2026-08-15T12:10:00Z", confidence_score=0.9
+    )
+    low_late = make_raw_event(
+        event_id="e3", risk_signal="low", timestamp="2026-08-15T11:50:00Z", confidence_score=0.5
+    )
 
     process_event(graph, high)
     process_event(graph, medium)

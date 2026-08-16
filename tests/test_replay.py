@@ -96,11 +96,14 @@ def test_replaying_the_same_batch_twice_produces_identical_output():
 
 
 def test_replay_handles_late_out_of_order_batch():
-    # Submitted out of order within the replay batch itself.
+    # Submitted out of order within the replay batch itself. Confidence
+    # rises with time so each later report legitimately wins its conflict
+    # against the previous one, giving an unambiguous expected chain
+    # while still proving the late (11:50) event is resolved first.
     scrambled = [
-        event(event_id="e2", risk_signal="medium", timestamp="2026-08-15T12:10:00Z"),
-        event(event_id="e3", risk_signal="low", timestamp="2026-08-15T11:50:00Z"),
-        event(event_id="e1", risk_signal="high", timestamp="2026-08-15T12:00:00Z"),
+        event(event_id="e2", risk_signal="medium", timestamp="2026-08-15T12:10:00Z", confidence_score=0.9),
+        event(event_id="e3", risk_signal="low", timestamp="2026-08-15T11:50:00Z", confidence_score=0.5),
+        event(event_id="e1", risk_signal="high", timestamp="2026-08-15T12:00:00Z", confidence_score=0.7),
     ]
 
     result = replay_response(scrambled)

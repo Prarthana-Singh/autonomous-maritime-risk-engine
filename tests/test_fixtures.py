@@ -65,10 +65,20 @@ def test_conflicting_signals_fixture_resolves_by_reliability():
 
     result = replay_response(events)
 
+    # evt-4001 (Weather, HIGH, 0.8) is introduced first (no conflict yet).
+    # evt-4002 (Regulatory, LOW, 0.8) then conflicts with it: confidence
+    # tied, so source_reliability decides -- Weather (0.9) beats
+    # Regulatory (0.8), HIGH persists. evt-4003 (Geopolitical, MEDIUM,
+    # 0.6) then also conflicts, but loses on confidence_score (0.8 > 0.6),
+    # so HIGH persists a third time -- a later, weaker report does not
+    # get to become its own independent state anymore.
     state_history = result["vessels"]["MV-Borealis"]["state_history"]
     assert state_history[0]["risk_signal"] == "high"
-    assert "source_reliability" in state_history[0]["reasoning"]
-    assert state_history[1]["risk_signal"] == "medium"
+    assert "no conflict" in state_history[0]["reasoning"].lower()
+    assert state_history[1]["risk_signal"] == "high"
+    assert "source_reliability" in state_history[1]["reasoning"]
+    assert state_history[2]["risk_signal"] == "high"
+    assert "confidence_score" in state_history[2]["reasoning"]
 
 
 def test_replay_consistency_fixture_matches_live_processing():
@@ -94,7 +104,12 @@ def test_multiple_vessels_fixture_keeps_vessels_independent():
     assert set(result["vessels"].keys()) == {"MV-Atlas", "MV-Borealis"}
     atlas_signals = [s["risk_signal"] for s in result["vessels"]["MV-Atlas"]["state_history"]]
     borealis_signals = [s["risk_signal"] for s in result["vessels"]["MV-Borealis"]["state_history"]]
-    assert atlas_signals == ["high", "medium"]
+    # evt-6001 (HIGH, 0.85) is challenged by evt-6003 (MEDIUM, 0.55) but
+    # wins on confidence_score, so HIGH persists rather than MEDIUM
+    # becoming its own independent state.
+    assert atlas_signals == ["high", "high"]
     # evt-6004 (06:00) arrives late relative to evt-6002 (07:05) but is
-    # timestamped earlier, so it must be reconstructed first.
-    assert borealis_signals == ["medium", "low"]
+    # timestamped earlier, so it must be reconstructed first. It then
+    # wins its conflict against evt-6002 (0.7 > 0.6 confidence), so
+    # MEDIUM persists rather than LOW replacing it.
+    assert borealis_signals == ["medium", "medium"]

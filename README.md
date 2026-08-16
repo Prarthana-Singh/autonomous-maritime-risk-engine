@@ -87,10 +87,12 @@ ML/LLM risk prediction.
 3. **Load history** — fetch the vessel's existing events, in arrival
    (storage) order — deliberately *not* pre-sorted, so temporal ordering
    is never accidentally inherited from SQL (see below).
-4. **Reconstruct temporal state** — combine history + the new event, sort
-   chronologically, and group events that share an exact timestamp.
-5. **Resolve conflicts** — within each timestamp group, pick a winner
-   using the PRD's priority chain.
+4. **Reconstruct temporal state** — combine history + the new event and
+   sort chronologically.
+5. **Resolve conflicts** — walk the chronological sequence, comparing
+   each event's `risk_signal` against the vessel's current resolved
+   event; on a genuine disagreement, resolve the pair using the PRD's
+   priority chain (see below).
 6. **Generate audit** — build an audit record for the state affected by
    this event: `vessel_id`, `event_ids`, `resolved_risk_signal`,
    `resolution_reason`, `timestamp`.
@@ -133,13 +135,32 @@ source_reliability 0.9 is the highest among them."*) rather than a vague
 message like "risk resolved successfully" — this explanation is what
 lands in the audit trail.
 
-**What counts as "conflicting":** two events are treated as conflicting
-if they belong to the same vessel and share the *exact same timestamp*.
-The PRD describes near-simultaneous contradictory reports but does not
-define a time window, so exact-timestamp collision is the simplest
-defensible reading — documented here as an explicit assumption, not
-derived from the PRD. Events with distinct timestamps never conflict;
-each becomes its own state entry, regardless of whether they agree.
+**What counts as "conflicting":** events are processed in chronological
+order (`app/domain/temporal.py::reconstruct_temporal_history`), and the
+vessel's *current resolved event* is tracked as a running pointer. Each
+next event in that order is compared against it by `risk_signal` alone:
+
+- **Same `risk_signal`** — no conflict. The new event is accepted as its
+  own state entry and becomes the new current resolved event (the most
+  recent confirming evidence).
+- **Different `risk_signal`** — a real conflict. `resolve_conflict` is
+  run on exactly `[current_resolved_event, incoming_event]`; the winner
+  becomes the new current resolved event, which may still be the
+  *previous* one, if it outranks the challenger.
+
+This means a later, weaker report does not just get to become its own
+independent state — it has to actually win a resolution against
+whatever is currently established, and a strong early report can persist
+across several weaker later ones that disagree with it.
+
+*Revision note:* an earlier version of this rule treated two events as
+conflicting only if they shared the exact same timestamp, exempting
+events with any timestamp difference — however small — from resolution
+entirely. That undertriggered on realistic asynchronous data and did not
+match the PRD's own example (Weather HIGH vs. Regulatory LOW is not
+described as simultaneous). It was revisited and replaced with the
+current-vs-incoming rule above for better PRD alignment; there is no
+longer a timestamp-matching condition on what counts as a conflict.
 
 ## Source reliability
 
@@ -171,8 +192,9 @@ true no-op: it changes nothing about persisted state.
 
 Every accepted event produces exactly one audit record
 (`app/storage/db.py`, table `audit_records`): `audit_id` (= the
-triggering `event_id`), `vessel_id`, `event_ids` (all events in that
-event's resolved timestamp group), `resolved_risk_signal`,
+triggering `event_id`), `vessel_id`, `event_ids` (either just the event
+itself, if it agreed with the current resolved state, or that state's
+event plus this one, if it was a genuine conflict), `resolved_risk_signal`,
 `resolution_reason`, `timestamp`. Audit records are append-only and
 retrievable via `GET /vessels/{vessel_id}/audit`.
 
@@ -241,7 +263,7 @@ app/
 replay_cli.py                 CLI replay entrypoint
 fixtures/                     5 scenario JSON files + README describing each
 outputs/                      generated decision-trace JSON, one per fixture
-tests/                        pytest suite (64 tests)
+tests/                        pytest suite (66 tests)
 Dockerfile, .dockerignore
 requirements.txt
 ```
@@ -272,7 +294,7 @@ run; gitignored).
 .venv\Scripts\python -m pytest tests/ -v
 ```
 
-64 tests, covering validation, deduplication, temporal reconciliation,
+66 tests, covering validation, deduplication, temporal reconciliation,
 conflict resolution, the LangGraph pipeline's determinism, audit
 generation/retrieval, replay consistency/idempotency, and all 5 fixture
 scenarios end to end.
@@ -395,11 +417,12 @@ curl -X POST http://127.0.0.1:8000/replay \
   [Replay behavior](#replay-behavior). The alternative (writing replay
   into the live store) would make replaying already-ingested events
   collide with 409s, defeating the point of testing consistency.
-- **Conflict = exact timestamp match.** See
-  [Conflict resolution rules](#conflict-resolution-rules). Not specified
-  by the PRD; a fuzzier time-window definition was considered and
-  rejected as unnecessary complexity without a PRD-specified window to
-  implement against.
+- **Conflict = differing `risk_signal` against the current resolved
+  state**, not exact-timestamp match. See
+  [Conflict resolution rules](#conflict-resolution-rules). An
+  exact-timestamp-match version was tried first and rejected: it
+  undertriggered on realistic asynchronous data and didn't match the
+  PRD's own non-simultaneous example.
 - **`event_id` is the sole dedup key**, not `event_id` + `timestamp` (the
   MVP-scope text mentions both; the functional requirement only specifies
   `event_id`).
@@ -422,10 +445,12 @@ curl -X POST http://127.0.0.1:8000/replay \
 - **No pagination** on `/vessels/{id}/history` or `/vessels/{id}/audit` —
   fine at fixture/demo scale, would need it for a vessel with a large
   event history.
-- **Conflict grouping is exact-timestamp only.** Two reports 1 second
-  apart are never treated as conflicting, even if they clearly describe
-  the same real-world moment. There's no PRD-specified time window to
-  implement instead.
+- **No staleness/decay on the resolved state.** A strong early report
+  (high confidence, reliable source) can persist as the resolved
+  `risk_signal` indefinitely, outranking any number of later, weaker
+  conflicting reports — there's no time-based decay that would let old
+  evidence "expire" and yield to newer-but-weaker reports. The PRD does
+  not specify one.
 - **No validation rejects events older than 7 days.** The PRD's "must
   handle events up to 7 days in the past" is treated as a capability
   requirement, not an input-rejection rule (see PRD reading in code

@@ -1,14 +1,26 @@
 """Combine temporal ordering and conflict resolution into a per-vessel
-RiskState history: exactly one RiskState per distinct event timestamp.
+RiskState history: exactly one RiskState per processed event.
 
-Two events are considered "conflicting" if they belong to the same vessel
-and share the exact same timestamp. This grouping rule is the simplest
-defensible reading of the PRD (which describes near-simultaneous
-contradictory reports but does not define a time window); it is
-documented here and in the README as an implementation detail. It is
-independent of the priority chain itself, which lives in
-conflict_resolution.py. Groups of size 1 trivially resolve via
-resolve_conflict's NO_CONFLICT case.
+Two events are considered "conflicting" if they belong to the same
+vessel and their risk_signal values differ -- regardless of whether
+their timestamps match. Events are walked in chronological order
+(reconstruct_temporal_history), tracking a single "current resolved
+event" for the vessel. Each new event is compared against it:
+
+  - same risk_signal -> no conflict; the new event is accepted as its
+    own state entry, and becomes the new current resolved event (the
+    most recent confirming evidence).
+  - different risk_signal -> a real conflict; resolve_conflict decides
+    the winner between [current_resolved_event, incoming_event]. The
+    winner becomes the new current resolved event -- which may still be
+    the old one, if it outranks the challenger.
+
+An earlier version of this module grouped events by exact-timestamp
+match before resolving conflicts within each group. That undertriggered
+on realistic asynchronous data (the PRD's own Weather-HIGH-vs-Regulatory-
+LOW example is not described as simultaneous) and has been replaced by
+this comparison-against-current-state rule -- documented here, and in
+the README, as a revised implementation decision.
 
 reconstruct_state_history is a pure function of the full event set: given
 the same events, it always produces the same state history regardless of
@@ -33,39 +45,42 @@ class RiskState:
     event_ids: tuple[str, ...]
 
 
-def group_by_timestamp(ordered_events: list[EventIn]) -> list[list[EventIn]]:
-    """Group temporally-ordered events into consecutive runs sharing the
-    exact same timestamp. Input MUST already be sorted by
-    reconstruct_temporal_history -- grouping by consecutive runs is only
-    correct on sorted input.
+def _to_risk_state(candidates: list[EventIn]) -> tuple[RiskState, EventIn]:
+    resolution = resolve_conflict(candidates)
+    winner = resolution.winner
+    state = RiskState(
+        risk_signal=winner.risk_signal,
+        source_reliability=SOURCE_RELIABILITY[winner.source.value],
+        timestamp=winner.timestamp,
+        reasoning=resolution.explanation,
+        event_ids=tuple(e.event_id for e in candidates),
+    )
+    return state, winner
+
+
+def resolve_state_sequence(ordered_events: list[EventIn]) -> list[RiskState]:
+    """Walk temporally-ordered events, comparing each against the
+    vessel's current resolved event by risk_signal. Input MUST already
+    be sorted by reconstruct_temporal_history.
     """
-    groups: list[list[EventIn]] = []
-    for event in ordered_events:
-        if groups and groups[-1][-1].timestamp == event.timestamp:
-            groups[-1].append(event)
+    if not ordered_events:
+        return []
+
+    state_history: list[RiskState] = []
+
+    first_state, resolved_event = _to_risk_state([ordered_events[0]])
+    state_history.append(first_state)
+
+    for event in ordered_events[1:]:
+        if event.risk_signal == resolved_event.risk_signal:
+            state, resolved_event = _to_risk_state([event])
         else:
-            groups.append([event])
-    return groups
+            state, resolved_event = _to_risk_state([resolved_event, event])
+        state_history.append(state)
 
-
-def resolve_state_groups(groups: list[list[EventIn]]) -> list[RiskState]:
-    states = []
-    for group in groups:
-        resolution = resolve_conflict(group)
-        winner = resolution.winner
-        states.append(
-            RiskState(
-                risk_signal=winner.risk_signal,
-                source_reliability=SOURCE_RELIABILITY[winner.source.value],
-                timestamp=winner.timestamp,
-                reasoning=resolution.explanation,
-                event_ids=tuple(e.event_id for e in group),
-            )
-        )
-    return states
+    return state_history
 
 
 def reconstruct_state_history(events: list[EventIn]) -> list[RiskState]:
     ordered = reconstruct_temporal_history(events)
-    groups = group_by_timestamp(ordered)
-    return resolve_state_groups(groups)
+    return resolve_state_sequence(ordered)

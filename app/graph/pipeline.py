@@ -22,7 +22,7 @@ from langgraph.graph.state import CompiledStateGraph
 from pydantic import ValidationError
 
 from app.domain.deduplication import is_duplicate
-from app.domain.state_reconciliation import group_by_timestamp, resolve_state_groups
+from app.domain.state_reconciliation import resolve_state_sequence
 from app.domain.temporal import reconstruct_temporal_history
 from app.graph.state import GraphState
 from app.models.schemas import EventIn
@@ -70,18 +70,26 @@ def make_load_history_node(conn: sqlite3.Connection):
 def reconstruct_temporal_node(state: GraphState) -> GraphState:
     combined = state["history_before"] + [state["event"]]
     ordered = reconstruct_temporal_history(combined)
-    groups = group_by_timestamp(ordered)
-    return {**state, "temporal_groups": groups}
+    return {**state, "temporal_order": ordered}
 
 
 def resolve_conflicts_node(state: GraphState) -> GraphState:
-    state_history = resolve_state_groups(state["temporal_groups"])
+    state_history = resolve_state_sequence(state["temporal_order"])
     return {**state, "state_history": state_history}
 
 
 def generate_audit_node(state: GraphState) -> GraphState:
     event = state["event"]
-    affected = next(rs for rs in state["state_history"] if event.event_id in rs.event_ids)
+    # state_history[i] is, by construction, the entry produced while
+    # incorporating temporal_order[i] -- a 1:1 positional correspondence.
+    # A plain "does this entry contain my event_id" search is ambiguous
+    # under resolve_state_sequence: an event's id can legitimately appear
+    # in its own entry AND, later, as the losing/winning anchor referenced
+    # in the NEXT event's entry. Position-based lookup is unambiguous.
+    index = next(
+        i for i, e in enumerate(state["temporal_order"]) if e.event_id == event.event_id
+    )
+    affected = state["state_history"][index]
     audit_record: dict[str, Any] = {
         "audit_id": event.event_id,
         "vessel_id": event.vessel_id,

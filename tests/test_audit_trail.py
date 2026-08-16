@@ -42,7 +42,8 @@ def test_each_accepted_event_gets_its_own_audit_record():
 
     weather = make_raw_event(event_id="w1", source="Weather", risk_signal="high")
     regulatory = make_raw_event(
-        event_id="r1", source="Regulatory Compliance", risk_signal="low"
+        event_id="r1", source="Regulatory Compliance", risk_signal="low",
+        timestamp="2026-08-15T12:05:00Z",
     )
     process_event(graph, weather)
     process_event(graph, regulatory)
