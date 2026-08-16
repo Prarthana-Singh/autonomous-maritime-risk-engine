@@ -25,12 +25,29 @@ def insert_event(conn: sqlite3.Connection, event: EventIn) -> None:
     conn.commit()
 
 
-def get_events_for_vessel(conn: sqlite3.Connection, vessel_id: str) -> list[sqlite3.Row]:
+def _row_to_event(row: sqlite3.Row) -> EventIn:
+    return EventIn(
+        event_id=row["event_id"],
+        source=row["source"],
+        vessel_id=row["vessel_id"],
+        risk_signal=row["risk_signal"],
+        timestamp=row["timestamp"],
+        confidence_score=row["confidence_score"],
+    )
+
+
+def get_events_for_vessel(conn: sqlite3.Connection, vessel_id: str) -> list[EventIn]:
+    """Return a vessel's events in storage/arrival order (rowid order) —
+    NOT temporal order. Callers must run this through
+    app.domain.temporal.reconstruct_temporal_history to get a correctly
+    time-ordered history; arrival order and temporal order are not the
+    same thing when events arrive late or out of order.
+    """
     cursor = conn.execute(
-        "SELECT * FROM events WHERE vessel_id = ? ORDER BY timestamp ASC, event_id ASC",
+        "SELECT * FROM events WHERE vessel_id = ? ORDER BY rowid ASC",
         (vessel_id,),
     )
-    return cursor.fetchall()
+    return [_row_to_event(row) for row in cursor.fetchall()]
 
 
 def get_event_by_id(conn: sqlite3.Connection, event_id: str) -> sqlite3.Row | None:

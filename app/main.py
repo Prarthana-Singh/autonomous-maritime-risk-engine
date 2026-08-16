@@ -6,6 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.api import events as events_api
+from app.api import vessels as vessels_api
 from app.storage import db as db_module
 
 
@@ -28,6 +29,7 @@ def create_app(db_path: str | Path = db_module.DEFAULT_DB_PATH) -> FastAPI:
         return {"status": "ok"}
 
     app.include_router(events_api.router)
+    app.include_router(vessels_api.router)
     return app
 
 
