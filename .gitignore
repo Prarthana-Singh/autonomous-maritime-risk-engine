@@ -220,3 +220,8 @@ __marimo__/
 # Project docs
 claude.md
 prd.md
+
+# Runtime SQLite database
+/data/
+*.db
+*.db-journal
