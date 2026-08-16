@@ -7,12 +7,14 @@ from fastapi.responses import JSONResponse
 
 from app.api import events as events_api
 from app.api import vessels as vessels_api
+from app.graph.pipeline import build_graph
 from app.storage import db as db_module
 
 
 def create_app(db_path: str | Path = db_module.DEFAULT_DB_PATH) -> FastAPI:
     app = FastAPI(title="Autonomous Maritime Risk Assessment Engine")
     app.state.db = db_module.connect(db_path)
+    app.state.graph = build_graph(app.state.db)
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(
