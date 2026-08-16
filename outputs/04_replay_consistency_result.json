@@ -1,0 +1,97 @@
+{
+  "processed": [
+    {
+      "event_id": "evt-5001",
+      "status": "accepted"
+    },
+    {
+      "event_id": "evt-5002",
+      "status": "accepted"
+    },
+    {
+      "event_id": "evt-5003",
+      "status": "accepted"
+    },
+    {
+      "event_id": "evt-5004",
+      "status": "accepted"
+    }
+  ],
+  "vessels": {
+    "MV-Celeste": {
+      "audit_trail": [
+        {
+          "audit_id": "evt-5001",
+          "event_ids": [
+            "evt-5001"
+          ],
+          "resolution_reason": "Only one candidate event (evt-5001); no conflict to resolve.",
+          "resolved_risk_signal": "medium",
+          "timestamp": "2026-08-14T05:00:00+00:00",
+          "vessel_id": "MV-Celeste"
+        },
+        {
+          "audit_id": "evt-5002",
+          "event_ids": [
+            "evt-5002"
+          ],
+          "resolution_reason": "Only one candidate event (evt-5002); no conflict to resolve.",
+          "resolved_risk_signal": "high",
+          "timestamp": "2026-08-14T08:00:00+00:00",
+          "vessel_id": "MV-Celeste"
+        },
+        {
+          "audit_id": "evt-5003",
+          "event_ids": [
+            "evt-5002",
+            "evt-5003"
+          ],
+          "resolution_reason": "Weather (evt-5002) selected: confidence_score tied at 0.9 among 2 candidates; source_reliability 0.9 is the highest among them.",
+          "resolved_risk_signal": "high",
+          "timestamp": "2026-08-14T08:00:00+00:00",
+          "vessel_id": "MV-Celeste"
+        },
+        {
+          "audit_id": "evt-5004",
+          "event_ids": [
+            "evt-5004"
+          ],
+          "resolution_reason": "Only one candidate event (evt-5004); no conflict to resolve.",
+          "resolved_risk_signal": "low",
+          "timestamp": "2026-08-14T02:00:00+00:00",
+          "vessel_id": "MV-Celeste"
+        }
+      ],
+      "state_history": [
+        {
+          "event_ids": [
+            "evt-5004"
+          ],
+          "reasoning": "Only one candidate event (evt-5004); no conflict to resolve.",
+          "risk_signal": "low",
+          "source_reliability": 0.7,
+          "timestamp": "2026-08-14T02:00:00+00:00"
+        },
+        {
+          "event_ids": [
+            "evt-5001"
+          ],
+          "reasoning": "Only one candidate event (evt-5001); no conflict to resolve.",
+          "risk_signal": "medium",
+          "source_reliability": 0.6,
+          "timestamp": "2026-08-14T05:00:00+00:00"
+        },
+        {
+          "event_ids": [
+            "evt-5002",
+            "evt-5003"
+          ],
+          "reasoning": "Weather (evt-5002) selected: confidence_score tied at 0.9 among 2 candidates; source_reliability 0.9 is the highest among them.",
+          "risk_signal": "high",
+          "source_reliability": 0.9,
+          "timestamp": "2026-08-14T08:00:00+00:00"
+        }
+      ]
+    }
+  }
+}

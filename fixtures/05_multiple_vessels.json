@@ -1,0 +1,34 @@
+[
+  {
+    "event_id": "evt-6001",
+    "source": "Weather",
+    "vessel_id": "MV-Atlas",
+    "risk_signal": "high",
+    "timestamp": "2026-08-14T07:00:00Z",
+    "confidence_score": 0.85
+  },
+  {
+    "event_id": "evt-6002",
+    "source": "Geopolitical Risk",
+    "vessel_id": "MV-Borealis",
+    "risk_signal": "low",
+    "timestamp": "2026-08-14T07:05:00Z",
+    "confidence_score": 0.6
+  },
+  {
+    "event_id": "evt-6003",
+    "source": "Port Congestion",
+    "vessel_id": "MV-Atlas",
+    "risk_signal": "medium",
+    "timestamp": "2026-08-14T09:00:00Z",
+    "confidence_score": 0.55
+  },
+  {
+    "event_id": "evt-6004",
+    "source": "Regulatory Compliance",
+    "vessel_id": "MV-Borealis",
+    "risk_signal": "medium",
+    "timestamp": "2026-08-14T06:00:00Z",
+    "confidence_score": 0.7
+  }
+]

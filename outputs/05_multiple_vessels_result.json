@@ -1,0 +1,110 @@
+{
+  "processed": [
+    {
+      "event_id": "evt-6001",
+      "status": "accepted"
+    },
+    {
+      "event_id": "evt-6002",
+      "status": "accepted"
+    },
+    {
+      "event_id": "evt-6003",
+      "status": "accepted"
+    },
+    {
+      "event_id": "evt-6004",
+      "status": "accepted"
+    }
+  ],
+  "vessels": {
+    "MV-Atlas": {
+      "audit_trail": [
+        {
+          "audit_id": "evt-6001",
+          "event_ids": [
+            "evt-6001"
+          ],
+          "resolution_reason": "Only one candidate event (evt-6001); no conflict to resolve.",
+          "resolved_risk_signal": "high",
+          "timestamp": "2026-08-14T07:00:00+00:00",
+          "vessel_id": "MV-Atlas"
+        },
+        {
+          "audit_id": "evt-6003",
+          "event_ids": [
+            "evt-6003"
+          ],
+          "resolution_reason": "Only one candidate event (evt-6003); no conflict to resolve.",
+          "resolved_risk_signal": "medium",
+          "timestamp": "2026-08-14T09:00:00+00:00",
+          "vessel_id": "MV-Atlas"
+        }
+      ],
+      "state_history": [
+        {
+          "event_ids": [
+            "evt-6001"
+          ],
+          "reasoning": "Only one candidate event (evt-6001); no conflict to resolve.",
+          "risk_signal": "high",
+          "source_reliability": 0.9,
+          "timestamp": "2026-08-14T07:00:00+00:00"
+        },
+        {
+          "event_ids": [
+            "evt-6003"
+          ],
+          "reasoning": "Only one candidate event (evt-6003); no conflict to resolve.",
+          "risk_signal": "medium",
+          "source_reliability": 0.6,
+          "timestamp": "2026-08-14T09:00:00+00:00"
+        }
+      ]
+    },
+    "MV-Borealis": {
+      "audit_trail": [
+        {
+          "audit_id": "evt-6002",
+          "event_ids": [
+            "evt-6002"
+          ],
+          "resolution_reason": "Only one candidate event (evt-6002); no conflict to resolve.",
+          "resolved_risk_signal": "low",
+          "timestamp": "2026-08-14T07:05:00+00:00",
+          "vessel_id": "MV-Borealis"
+        },
+        {
+          "audit_id": "evt-6004",
+          "event_ids": [
+            "evt-6004"
+          ],
+          "resolution_reason": "Only one candidate event (evt-6004); no conflict to resolve.",
+          "resolved_risk_signal": "medium",
+          "timestamp": "2026-08-14T06:00:00+00:00",
+          "vessel_id": "MV-Borealis"
+        }
+      ],
+      "state_history": [
+        {
+          "event_ids": [
+            "evt-6004"
+          ],
+          "reasoning": "Only one candidate event (evt-6004); no conflict to resolve.",
+          "risk_signal": "medium",
+          "source_reliability": 0.8,
+          "timestamp": "2026-08-14T06:00:00+00:00"
+        },
+        {
+          "event_ids": [
+            "evt-6002"
+          ],
+          "reasoning": "Only one candidate event (evt-6002); no conflict to resolve.",
+          "risk_signal": "low",
+          "source_reliability": 0.7,
+          "timestamp": "2026-08-14T07:05:00+00:00"
+        }
+      ]
+    }
+  }
+}

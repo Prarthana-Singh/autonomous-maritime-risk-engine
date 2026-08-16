@@ -1,0 +1,26 @@
+[
+  {
+    "event_id": "evt-4001",
+    "source": "Weather",
+    "vessel_id": "MV-Borealis",
+    "risk_signal": "high",
+    "timestamp": "2026-08-14T09:00:00Z",
+    "confidence_score": 0.8
+  },
+  {
+    "event_id": "evt-4002",
+    "source": "Regulatory Compliance",
+    "vessel_id": "MV-Borealis",
+    "risk_signal": "low",
+    "timestamp": "2026-08-14T09:00:00Z",
+    "confidence_score": 0.8
+  },
+  {
+    "event_id": "evt-4003",
+    "source": "Geopolitical Risk",
+    "vessel_id": "MV-Borealis",
+    "risk_signal": "medium",
+    "timestamp": "2026-08-14T15:00:00Z",
+    "confidence_score": 0.6
+  }
+]

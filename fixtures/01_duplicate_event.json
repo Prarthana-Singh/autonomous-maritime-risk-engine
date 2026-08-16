@@ -1,0 +1,18 @@
+[
+  {
+    "event_id": "evt-2001",
+    "source": "Weather",
+    "vessel_id": "MV-Atlas",
+    "risk_signal": "high",
+    "timestamp": "2026-08-14T06:00:00Z",
+    "confidence_score": 0.85
+  },
+  {
+    "event_id": "evt-2001",
+    "source": "Weather",
+    "vessel_id": "MV-Atlas",
+    "risk_signal": "high",
+    "timestamp": "2026-08-14T06:00:00Z",
+    "confidence_score": 0.85
+  }
+]

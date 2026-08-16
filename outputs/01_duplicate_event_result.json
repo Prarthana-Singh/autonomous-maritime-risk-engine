@@ -1,0 +1,40 @@
+{
+  "processed": [
+    {
+      "event_id": "evt-2001",
+      "status": "accepted"
+    },
+    {
+      "detail": "Duplicate event_id: evt-2001",
+      "event_id": "evt-2001",
+      "status": "rejected_duplicate"
+    }
+  ],
+  "vessels": {
+    "MV-Atlas": {
+      "audit_trail": [
+        {
+          "audit_id": "evt-2001",
+          "event_ids": [
+            "evt-2001"
+          ],
+          "resolution_reason": "Only one candidate event (evt-2001); no conflict to resolve.",
+          "resolved_risk_signal": "high",
+          "timestamp": "2026-08-14T06:00:00+00:00",
+          "vessel_id": "MV-Atlas"
+        }
+      ],
+      "state_history": [
+        {
+          "event_ids": [
+            "evt-2001"
+          ],
+          "reasoning": "Only one candidate event (evt-2001); no conflict to resolve.",
+          "risk_signal": "high",
+          "source_reliability": 0.9,
+          "timestamp": "2026-08-14T06:00:00+00:00"
+        }
+      ]
+    }
+  }
+}
