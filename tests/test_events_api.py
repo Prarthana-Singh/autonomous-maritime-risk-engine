@@ -1,4 +1,5 @@
 import copy
+from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -38,11 +39,47 @@ def test_valid_event_is_persisted(client: TestClient, app: FastAPI):
     assert row["risk_signal"] == "high"
 
 
+def test_event_timestamped_exactly_7_days_in_the_past_is_accepted(client: TestClient):
+    # PRD NFR: "must handle events with timestamps up to 7 days in the past."
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    event = make_event(timestamp=seven_days_ago.isoformat())
+
+    response = client.post("/events", json=event)
+
+    assert response.status_code == 201
+
+
+def test_event_timestamped_far_outside_a_week_is_still_accepted(client: TestClient):
+    # No upper bound on event age is enforced (see README design notes):
+    # the PRD states a capability guarantee ("must handle up to 7 days"),
+    # not a validation rule that rejects anything older.
+    over_a_year_ago = datetime.now(timezone.utc) - timedelta(days=400)
+    event = make_event(timestamp=over_a_year_ago.isoformat())
+
+    response = client.post("/events", json=event)
+
+    assert response.status_code == 201
+
+
 def test_malformed_event_missing_field_returns_400(client: TestClient):
     event = make_event()
     del event["vessel_id"]
 
     response = client.post("/events", json=event)
+
+    assert response.status_code == 400
+
+
+def test_non_object_json_body_returns_400(client: TestClient):
+    response = client.post("/events", json=[1, 2, 3])
+
+    assert response.status_code == 400
+
+
+def test_unparseable_json_body_returns_400(client: TestClient):
+    response = client.post(
+        "/events", content="not json at all", headers={"Content-Type": "application/json"}
+    )
 
     assert response.status_code == 400
 

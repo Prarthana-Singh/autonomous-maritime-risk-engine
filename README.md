@@ -263,7 +263,7 @@ app/
 replay_cli.py                 CLI replay entrypoint
 fixtures/                     5 scenario JSON files + README describing each
 outputs/                      generated decision-trace JSON, one per fixture
-tests/                        pytest suite (66 tests)
+tests/                        pytest suite (71 tests)
 Dockerfile, .dockerignore
 requirements.txt
 ```
@@ -294,7 +294,7 @@ run; gitignored).
 .venv\Scripts\python -m pytest tests/ -v
 ```
 
-66 tests, covering validation, deduplication, temporal reconciliation,
+71 tests, covering validation, deduplication, temporal reconciliation,
 conflict resolution, the LangGraph pipeline's determinism, audit
 generation/retrieval, replay consistency/idempotency, and all 5 fixture
 scenarios end to end.

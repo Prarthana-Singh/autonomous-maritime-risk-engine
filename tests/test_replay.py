@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timedelta, timezone
 
 import replay_cli
 from app.graph.runner import build_vessel_snapshot, replay_response
@@ -27,6 +28,19 @@ CONFLICT_SCENARIO = [
     event(event_id="g1", source="Geopolitical Risk", risk_signal="medium",
           timestamp="2026-08-15T11:00:00Z", confidence_score=0.6),
 ]
+
+
+def test_replay_accepts_events_with_timestamps_outside_the_current_window():
+    # PRD NFR: "must support replaying historical events with timestamps
+    # outside the current time window." Two years old, well past the
+    # 7-day guarantee, with no upper bound enforced.
+    long_ago = datetime.now(timezone.utc) - timedelta(days=730)
+    batch = [event(event_id="hist1", timestamp=long_ago.isoformat())]
+
+    result = replay_response(batch)
+
+    assert result["processed"][0]["status"] == "accepted"
+    assert result["vessels"]["vessel-1"]["state_history"][0]["risk_signal"] == "high"
 
 
 def test_replay_reports_status_per_event_in_submitted_order():
