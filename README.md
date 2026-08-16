@@ -25,22 +25,18 @@ patched. This is what makes replay, idempotency, and determinism
 tractable: the same event set always produces the same output, regardless
 of what order it arrived in or how many times it's reprocessed.
 
-```
-HTTP request (raw JSON)
-        |
-        v
-  FastAPI route (app/api/*.py)  -- thin: no business logic
-        |
-        v
-  LangGraph pipeline (app/graph/pipeline.py)
-    validate -> deduplicate -> load_history -> reconstruct_temporal
-        -> resolve_conflicts -> generate_audit -> persist
-        |
-        v
-  Domain layer (app/domain/*.py)  -- pure functions, no FastAPI/LangGraph imports
-        |
-        v
-  SQLite (app/storage/*.py)  -- append-only events + audit_records tables
+```mermaid
+flowchart TD
+    HTTP["HTTP request (raw JSON)"] --> API["FastAPI route — app/api/*.py<br/>thin: no business logic"]
+    API --> Graph
+
+    subgraph Graph["LangGraph pipeline — app/graph/pipeline.py"]
+        direction LR
+        V[validate] --> DD[deduplicate] --> LH[load_history] --> RT[reconstruct_temporal] --> RC[resolve_conflicts] --> GA[generate_audit] --> P[persist]
+    end
+
+    Graph --> Domain["Domain layer — app/domain/*.py<br/>pure functions, no FastAPI/LangGraph imports"]
+    Domain --> Storage["SQLite — app/storage/*.py<br/>append-only events + audit_records tables"]
 ```
 
 Layers:
