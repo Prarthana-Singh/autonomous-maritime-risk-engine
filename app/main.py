@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from app.api import audit as audit_api
 from app.api import events as events_api
+from app.api import replay as replay_api
 from app.api import vessels as vessels_api
 from app.graph.pipeline import build_graph
 from app.storage import db as db_module
@@ -34,6 +35,7 @@ def create_app(db_path: str | Path = db_module.DEFAULT_DB_PATH) -> FastAPI:
     app.include_router(events_api.router)
     app.include_router(vessels_api.router)
     app.include_router(audit_api.router)
+    app.include_router(replay_api.router)
     return app
 
 
